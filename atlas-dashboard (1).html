@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas Scales</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e10;--s1:#161618;--s2:#1c1c1f;--s3:#242428;--s4:#2c2c30;
+  --b:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.1);--b3:rgba(255,255,255,0.16);
+  --ac:#8b5cf6;--ac2:#7c3aed;--ac3:rgba(139,92,246,0.15);--ac4:rgba(139,92,246,0.08);
+  --tx:#f0f0f2;--t2:#a0a0a8;--t3:#505058;--t4:#303038;
+  --re:#f43f5e;--gr:#22c55e;--am:#f59e0b;--cy:#06b6d4;
+  --r:10px;--r2:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--tx);height:100vh;font-size:14px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px}
+
+.app{display:grid;grid-template-columns:220px 1fr;height:100vh}
+
+/* SIDEBAR */
+.sb{background:var(--s1);border-right:1px solid var(--b);display:flex;flex-direction:column}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--b)}
+.sb-logo-text{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.sb-logo-text span{color:var(--ac)}
+.sb-nav{flex:1;padding:10px;display:flex;flex-direction:column;gap:2px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r2);cursor:pointer;color:var(--t2);transition:all .15s;font-size:13px;font-weight:500;border:1px solid transparent;user-select:none}
+.sb-item:hover{background:var(--s2);color:var(--tx)}
+.sb-item.active{background:var(--ac3);color:var(--ac);border-color:rgba(139,92,246,.2)}
+.sb-item svg{width:15px;height:15px;flex-shrink:0}
+.sb-bottom{padding:12px 10px;border-top:1px solid var(--b)}
+.sb-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r2);cursor:pointer;transition:all .15s}
+.sb-user:hover{background:var(--s2)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--ac3);border:1.5px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--ac);flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-user-role{font-size:10px;color:var(--t3)}
+
+/* PAGES */
+.pages{overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow:hidden}
+.page.active{display:flex;flex-direction:column}
+
+/* PAGE HEADER */
+.pg-head{padding:20px 24px 16px;border-bottom:1px solid var(--b);flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between}
+.pg-title{font-size:22px;font-weight:700;letter-spacing:-.4px}
+.pg-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.pg-date{font-size:11px;color:var(--t3);font-family:'Geist Mono',monospace}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 24px;flex-shrink:0}
+.stat{background:var(--s1);border:1px solid var(--b);border-radius:var(--r);padding:14px 16px;transition:all .2s}
+.stat:hover{border-color:var(--b2)}
+.stat.hl{border-color:rgba(139,92,246,.25);background:var(--ac4)}
+.stat-label{font-size:11px;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;gap:5px;font-weight:500}
+.stat-label svg{width:13px;height:13px}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.stat-val.ac{color:var(--ac)}
+
+/* CALENDAR PAGE */
+.cal-page-body{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:0 24px 24px}
+
+/* VIEW TOGGLE */
+.view-toggle{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
+.view-nav{display:flex;align-items:center;gap:8px}
+.vn-btn{background:var(--s2);border:1px solid var(--b);color:var(--t2);width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:15px}
+.vn-btn:hover{background:var(--s3);color:var(--tx)}
+.vn-label{font-size:13px;font-weight:600;min-width:150px;text-align:center}
+.view-tabs{display:flex;gap:4px;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:3px}
+.view-tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;user-select:none}
+.view-tab.active{background:var(--ac);color:#fff}
+.view-tab:not(.active):hover{color:var(--tx);background:var(--s3)}
+.btn-add-ev{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-family:'Geist',sans-serif;font-weight:600;font-size:12px;cursor:pointer;transition:all .15s}
+.btn-add-ev:hover{background:var(--ac2)}
+
+/* MONTH VIEW */
+.month-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.month-view.hidden{display:none}
+.cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.cal-wd{text-align:center;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:1;overflow:hidden}
+.cal-day{background:var(--s2);border:1px solid var(--b);border-radius:7px;padding:6px;cursor:pointer;transition:all .15s;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.cal-day:hover{background:var(--s3);border-color:var(--b2)}
+.cal-day.today{border-color:var(--ac);background:var(--ac4)}
+.cal-day.today .dnum{color:var(--ac);font-weight:700}
+.cal-day.om{opacity:.2}
+.dnum{font-family:'Geist Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:3px}
+.devs{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.dpill{font-size:8px;padding:2px 5px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.dp-m{background:rgba(139,92,246,.3);color:#c4b5fd}
+.dp-t{background:rgba(6,182,212,.22);color:#67e8f9}
+.dp-f{background:rgba(245,158,11,.22);color:#fcd34d}
+.more-pill{font-size:8px;color:var(--t3);padding:1px 4px}
+
+/* WEEK VIEW */
+.week-view{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.week-view.hidden{display:none}
+.week-header{display:grid;grid-template-columns:60px repeat(7,1fr);margin-bottom:0;border-bottom:1px solid var(--b)}
+.week-day-head{text-align:center;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;border-left:1px solid var(--b)}
+.week-day-head:first-child{border-left:none}
+.wdh-name{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.wdh-num{font-size:18px;font-weight:700;color:var(--t2);line-height:1;font-family:'Geist Mono',monospace}
+.wdh-num.today-num{color:#fff;background:var(--ac);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.week-body{flex:1;overflow-y:auto;display:grid;grid-template-columns:60px repeat(7,1fr)}
+.time-col{display:flex;flex-direction:column}
+.time-slot{height:56px;display:flex;align-items:flex-start;justify-content:flex-end;padding:0 8px 0 0;flex-shrink:0}
+.time-label{font-size:10px;color:var(--t4);font-family:'Geist Mono',monospace;margin-top:-6px}
+.day-col{border-left:1px solid var(--b);display:flex;flex-direction:column;position:relative}
+.day-slot{height:56px;border-bottom:1px solid var(--b);flex-shrink:0;position:relative;cursor:pointer;transition:background .1s}
+.day-slot:hover{background:rgba(139,92,246,.05)}
+.week-ev{position:absolute;left:2px;right:2px;background:var(--ac3);border:1px solid rgba(139,92,246,.3);border-radius:5px;padding:3px 6px;font-size:10px;font-weight:600;color:var(--ac);overflow:hidden;cursor:pointer;z-index:2;transition:all .15s}
+.week-ev:hover{background:rgba(139,92,246,.25)}
+.week-ev.ev-t{background:rgba(6,182,212,.15);border-color:rgba(6,182,212,.3);color:#67e8f9}
+.week-ev.ev-f{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.week-ev.ev-notime{position:relative;left:auto;right:auto;margin:2px;height:auto}
+
+/* AGENDA VIEW */
+.agenda-view{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.agenda-view.hidden{display:none}
+.agenda-day{background:var(--s1);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.agenda-day-head{padding:10px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px}
+.agenda-day-name{font-size:12px;font-weight:700;color:var(--tx)}
+.agenda-day-date{font-size:11px;color:var(--t3);font-family:'Geist Mono',monospace}
+.agenda-day-badge{background:var(--ac3);color:var(--ac);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:auto}
+.agenda-ev{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--b);transition:all .15s;cursor:pointer}
+.agenda-ev:last-child{border-bottom:none}
+.agenda-ev:hover{background:var(--s2)}
+.ag-bar{width:3px;height:28px;border-radius:2px;flex-shrink:0}
+.ag-info{flex:1;min-width:0}
+.ag-name{font-size:13px;font-weight:500}
+.ag-meta{font-size:11px;color:var(--t2);margin-top:1px}
+.ag-del{background:none;border:none;color:var(--t4);cursor:pointer;padding:3px 6px;border-radius:4px;font-size:14px;transition:all .15s}
+.ag-del:hover{color:var(--re);background:rgba(244,63,94,.1)}
+
+/* RIGHT PANEL */
+.rp{border-left:1px solid var(--b);display:flex;flex-direction:column;overflow:hidden;width:300px;flex-shrink:0}
+.rp-top{padding:14px;border-bottom:1px solid var(--b);flex-shrink:0}
+.api-row{display:flex;gap:6px;margin-top:7px}
+.api-in{flex:1;background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);padding:7px 10px;color:var(--t2);font-family:'Geist Mono',monospace;font-size:10px;outline:none;transition:border-color .2s}
+.api-in:focus{border-color:var(--b2)}
+.api-in::placeholder{color:var(--t4)}
+.btn-sv{background:var(--ac);color:#fff;border:none;border-radius:6px;padding:7px 11px;font-family:'Geist',sans-serif;font-weight:600;font-size:11px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.btn-sv:hover{background:var(--ac2)}
+.notif-row{display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;font-size:11px;color:var(--t3)}
+.ndot{width:5px;height:5px;border-radius:50%;background:var(--t4)}
+.ndot.on{background:var(--gr);box-shadow:0 0 4px var(--gr)}
+.sec-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.tasks-sec{padding:14px;border-bottom:1px solid var(--b);flex-shrink:0}
+.add-row{display:flex;gap:5px;margin:8px 0}
+.t-in{flex:1;background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);padding:7px 10px;color:var(--tx);font-family:'Geist',sans-serif;font-size:12px;outline:none;transition:border-color .2s}
+.t-in:focus{border-color:var(--b2)}
+.t-in::placeholder{color:var(--t4)}
+.pri-sel{background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);padding:7px 5px;color:var(--t2);font-size:12px;outline:none;cursor:pointer}
+.btn-plus{background:var(--s3);border:1px solid var(--b2);color:var(--ac);border-radius:var(--r2);padding:7px 10px;font-size:16px;cursor:pointer;line-height:1;transition:all .15s}
+.btn-plus:hover{background:var(--ac3)}
+.t-list{display:flex;flex-direction:column;gap:4px;max-height:170px;overflow-y:auto}
+.t-item{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);cursor:pointer;transition:all .15s}
+.t-item:hover{background:var(--s3)}
+.t-item.done{opacity:.35}
+.t-cb{width:14px;height:14px;border:1.5px solid var(--t3);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px}
+.t-item.done .t-cb{background:var(--gr);border-color:var(--gr);color:#000}
+.t-txt{flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-item.done .t-txt{text-decoration:line-through;color:var(--t3)}
+.pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.p-h{background:var(--re)}.p-m{background:var(--am)}.p-l{background:var(--gr)}
+.t-del{background:none;border:none;color:var(--t4);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:3px;transition:all .15s}
+.t-del:hover{color:var(--re)}
+.chat-sec{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:13px;gap:9px}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.msg{display:flex;gap:7px;animation:fu .18s ease}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.msg-av{width:21px;height:21px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-top:1px}
+.msg.user .msg-av{background:var(--ac3);color:var(--ac);border:1px solid rgba(139,92,246,.3)}
+.msg.ai .msg-av{background:var(--s3);color:var(--t2);border:1px solid var(--b2)}
+.msg-bub{background:var(--s2);border:1px solid var(--b);border-radius:9px;padding:7px 10px;font-size:12px;line-height:1.5;max-width:calc(100% - 30px);word-break:break-word}
+.msg.user .msg-bub{background:var(--ac4);border-color:rgba(139,92,246,.2)}
+.msg-t{font-size:10px;color:var(--t4);margin-top:2px}
+.ci-row{display:flex;gap:5px;flex-shrink:0}
+.ci{flex:1;background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);padding:8px 10px;color:var(--tx);font-family:'Geist',sans-serif;font-size:12px;outline:none;resize:none;transition:border-color .2s}
+.ci:focus{border-color:rgba(139,92,246,.4)}
+.ci::placeholder{color:var(--t4)}
+.sb2{background:var(--ac);border:none;color:#fff;border-radius:var(--r2);width:36px;cursor:pointer;font-size:14px;transition:all .15s;flex-shrink:0}
+.sb2:hover{background:var(--ac2)}
+.sb2:disabled{opacity:.3;cursor:not-allowed}
+@keyframes ld{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
+.ld::after{content:'';animation:ld 1.2s infinite}
+.empty{text-align:center;padding:14px;color:var(--t4);font-size:12px}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.ov.open{display:flex}
+.md{background:var(--s1);border:1px solid var(--b2);border-radius:13px;padding:22px;width:355px;max-width:92vw;animation:mi .17s ease}
+@keyframes mi{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.md-title{font-size:15px;font-weight:700;margin-bottom:15px;letter-spacing:-.2px}
+.fg{margin-bottom:10px}
+.fl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block}
+.fi,.fsel{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:var(--r2);padding:8px 11px;color:var(--tx);font-family:'Geist',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.fi:focus,.fsel:focus{border-color:rgba(139,92,246,.4)}
+.fsel option{background:var(--s2)}
+.md-actions{display:flex;gap:7px;margin-top:16px}
+.bp{flex:1;background:var(--ac);color:#fff;border:none;border-radius:var(--r2);padding:10px;font-family:'Geist',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s}
+.bp:hover{background:var(--ac2)}
+.bc{background:var(--s2);color:var(--t2);border:1px solid var(--b);border-radius:var(--r2);padding:10px 15px;font-family:'Geist',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.bc:hover{background:var(--s3)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-logo"><div class="sb-logo-text">Atlas <span>Scales</span></div></div>
+  <div class="sb-nav">
+    <div class="sb-item active" onclick="showPage('calendar')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Calendar
+    </div>
+    <div class="sb-item" onclick="showPage('tasks')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Task-uri
+    </div>
+    <div class="sb-item" onclick="showPage('chat')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v7a1 1 0 01-1 1H9l-3 2v-2H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.3"/></svg>
+      Chat AI
+    </div>
+  </div>
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="av">DM</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name">David Mânteanu</div>
+        <div class="sb-user-role">Atlas Scales</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div class="pages" style="display:grid;grid-template-columns:1fr 300px;overflow:hidden">
+
+  <!-- CENTER CONTENT (all pages share this area) -->
+  <div style="overflow:hidden;display:flex;flex-direction:column">
+
+    <!-- CALENDAR PAGE -->
+    <div class="page active" id="page-calendar">
+      <div class="pg-head">
+        <div>
+          <div class="pg-title" id="greeting">Bună, David!</div>
+          <div class="pg-sub" id="phDate"></div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-label"><svg viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h11" stroke="currentColor" stroke-width="1.2"/></svg>Evenimente azi</div><div class="stat-val ac" id="statAzi">0</div></div>
+        <div class="stat hl"><div class="stat-label"><svg viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 4V6.5l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Săptămâna asta</div><div class="stat-val ac" id="statSapt">0</div></div>
+        <div class="stat"><div class="stat-label"><svg viewBox="0 0 13 13" fill="none"><path d="M2 9l3-3 2 2 4-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Task-uri active</div><div class="stat-val" id="statTasks">0</div></div>
+      </div>
+      <div class="cal-page-body">
+        <div class="view-toggle">
+          <div class="view-nav">
+            <button class="vn-btn" onclick="navCal(-1)">‹</button>
+            <div class="vn-label" id="calLabel"></div>
+            <button class="vn-btn" onclick="navCal(1)">›</button>
+            <button class="vn-btn" onclick="goToday()" style="width:auto;padding:0 10px;font-size:11px;font-weight:600">Azi</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="view-tabs">
+              <div class="view-tab active" id="tab-month" onclick="setView('month')">Lună</div>
+              <div class="view-tab" id="tab-week" onclick="setView('week')">Săptămână</div>
+              <div class="view-tab" id="tab-agenda" onclick="setView('agenda')">Agendă</div>
+            </div>
+            <button class="btn-add-ev" onclick="openModal()">+ Eveniment</button>
+          </div>
+        </div>
+
+        <!-- MONTH VIEW -->
+        <div class="month-view" id="monthView">
+          <div class="cal-wdays">
+            <div class="cal-wd">Lun</div><div class="cal-wd">Mar</div><div class="cal-wd">Mie</div>
+            <div class="cal-wd">Joi</div><div class="cal-wd">Vin</div><div class="cal-wd">Sâm</div><div class="cal-wd">Dum</div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <!-- WEEK VIEW -->
+        <div class="week-view hidden" id="weekView">
+          <div class="week-header" id="weekHeader">
+            <div style="border-bottom:1px solid var(--b)"></div>
+          </div>
+          <div class="week-body" id="weekBody"></div>
+        </div>
+
+        <!-- AGENDA VIEW -->
+        <div class="agenda-view hidden" id="agendaView"></div>
+      </div>
+    </div>
+
+    <!-- TASKS PAGE -->
+    <div class="page" id="page-tasks">
+      <div class="pg-head"><div><div class="pg-title">Task-uri</div><div class="pg-sub">Gestionează tot ce ai de făcut</div></div></div>
+      <div style="padding:20px 24px;flex:1;overflow-y:auto">
+        <div class="add-row" style="margin-bottom:14px">
+          <input class="t-in" id="tIn2" placeholder="Task nou..." onkeydown="if(event.key==='Enter')addTask2()">
+          <select class="pri-sel" id="tPri2">
+            <option value="high">🔴 Mare</option>
+            <option value="medium" selected>🟡 Medie</option>
+            <option value="low">🟢 Mică</option>
+          </select>
+          <button class="btn-add-ev" onclick="addTask2()">Adaugă</button>
+        </div>
+        <div id="tList2" style="display:flex;flex-direction:column;gap:6px;max-height:none"></div>
+      </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div class="page" id="page-chat">
+      <div class="pg-head"><div><div class="pg-title">Chat AI</div><div class="pg-sub">Vorbește cu Claude despre calendar și task-uri</div></div></div>
+      <div style="flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:8px" id="chatMsgs2">
+        <div class="msg ai"><div class="msg-av">AI</div><div><div class="msg-bub">Salut David! Pot adăuga meeting-uri, task-uri sau îți arăt ce ai planificat. Scrie-mi orice!</div><div class="msg-t">Acum</div></div></div>
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid var(--b);display:flex;gap:8px">
+        <textarea class="ci" id="ci2" placeholder="ex: Adaugă meeting cu Popescu luni la 10:00" onkeydown="handleKey2(event)" rows="1" style="flex:1"></textarea>
+        <button class="sb2" id="sb2" onclick="sendMsg2()" style="width:40px">↑</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rp">
+    <div class="rp-top">
+      <div class="sec-lbl">API Key Claude</div>
+      <div class="api-row">
+        <input class="api-in" type="password" id="apiKey" placeholder="sk-ant-...">
+        <button class="btn-sv" onclick="saveKey()">Salvează</button>
+      </div>
+      <div class="notif-row" onclick="reqNotif()">
+        <div class="ndot" id="ndot"></div>
+        <span id="ntxt">Click pentru notificări</span>
+      </div>
+    </div>
+
+    <div class="tasks-sec">
+      <div class="sec-lbl">Task-uri rapide</div>
+      <div class="add-row">
+        <input class="t-in" id="tIn" placeholder="Task nou..." onkeydown="if(event.key==='Enter')addTask()">
+        <select class="pri-sel" id="tPri"><option value="high">🔴</option><option value="medium" selected>🟡</option><option value="low">🟢</option></select>
+        <button class="btn-plus" onclick="addTask()">+</button>
+      </div>
+      <div class="t-list" id="tList"></div>
+    </div>
+
+    <div class="chat-sec">
+      <div class="sec-lbl" style="flex-shrink:0;margin-bottom:2px">Chat rapid</div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg ai"><div class="msg-av">AI</div><div><div class="msg-bub">Salut David! Cum te ajut azi?</div><div class="msg-t">Acum</div></div></div>
+      </div>
+      <div class="ci-row">
+        <textarea class="ci" id="chatIn" placeholder="Scrie un mesaj..." onkeydown="handleKey(event)" rows="1"></textarea>
+        <button class="sb2" id="sendBtn" onclick="sendMsg()">↑</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="ov" id="ov">
+  <div class="md">
+    <div class="md-title">Adaugă eveniment</div>
+    <div class="fg"><label class="fl">Titlu</label><input class="fi" id="eTitle" placeholder="ex: Meeting cu Popescu"></div>
+    <div class="fg"><label class="fl">Tip</label><select class="fsel" id="eType"><option value="meeting">📅 Meeting client</option><option value="task">✅ Task</option><option value="followup">🔔 Follow-up</option></select></div>
+    <div class="fg"><label class="fl">Data</label><input class="fi" type="date" id="eDate"></div>
+    <div class="fg"><label class="fl">Ora (opțional)</label><input class="fi" type="time" id="eTime"></div>
+    <div class="fg"><label class="fl">Note (opțional)</label><input class="fi" id="eNotes" placeholder="Detalii..."></div>
+    <div class="md-actions"><button class="bc" onclick="closeModal()">Anulează</button><button class="bp" onclick="saveEvent()">Salvează</button></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['Ianuarie','Februarie','Martie','Aprilie','Mai','Iunie','Iulie','August','Septembrie','Octombrie','Noiembrie','Decembrie'];
+const DAYS=['Lun','Mar','Mie','Joi','Vin','Sâm','Dum'];
+let S={events:[],tasks:[],apiKey:'',mo:new Date().getMonth(),yr:new Date().getFullYear(),weekOffset:0,view:'month'};
+
+// STORAGE
+function load(){try{const d=JSON.parse(localStorage.getItem('atlas3')||'{}');S.events=d.events||[];S.tasks=d.tasks||[];S.apiKey=d.apiKey||'';}catch(e){}if(S.apiKey)document.getElementById('apiKey').value=S.apiKey;}
+function save(){localStorage.setItem('atlas3',JSON.stringify({events:S.events,tasks:S.tasks,apiKey:S.apiKey}));}
+function saveKey(){S.apiKey=document.getElementById('apiKey').value.trim();save();toast('API key salvat ✓');}
+
+// PAGES
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach((el,i)=>el.classList.toggle('active',['calendar','tasks','chat'][i]===p));
+  if(p==='tasks')renderTasksPage();
+}
+
+// HEADER
+function initHeader(){
+  const now=new Date(),h=now.getHours();
+  document.getElementById('greeting').textContent=(h<12?'Bună dimineața':h<18?'Bună ziua':'Bună seara')+', David!';
+  const days=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+  document.getElementById('phDate').textContent=`${days[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+}
+function updateStats(){
+  const td=today(),now=new Date();
+  const ws=new Date(now);ws.setDate(now.getDate()-((now.getDay()+6)%7));
+  const we=new Date(ws);we.setDate(ws.getDate()+6);
+  const wss=ws.toISOString().slice(0,10),wes=we.toISOString().slice(0,10);
+  document.getElementById('statAzi').textContent=S.events.filter(e=>e.date===td).length;
+  document.getElementById('statSapt').textContent=S.events.filter(e=>e.date>=wss&&e.date<=wes).length;
+  document.getElementById('statTasks').textContent=S.tasks.filter(t=>!t.done).length;
+}
+
+// NOTIFICATIONS
+function reqNotif(){if(!('Notification'in window))return;Notification.requestPermission().then(p=>{document.getElementById('ndot').className='ndot'+(p==='granted'?' on':'');document.getElementById('ntxt').textContent=p==='granted'?'Notificări active':'Notificări oprite';});}
+function initNotif(){if(Notification.permission==='granted'){document.getElementById('ndot').className='ndot on';document.getElementById('ntxt').textContent='Notificări active';}}
+function schedNotif(ev){if(!ev.time||Notification.permission!=='granted')return;const t=new Date(ev.date+'T'+ev.time).getTime()-15*60*1000-Date.now();if(t>0)setTimeout(()=>new Notification('Atlas Scales',{body:ev.title+' în 15 minute!'}),t);}
+
+// UTILS
+function today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(s){const[y,m,d]=s.split('-');return`${d}.${m}.${y}`;}
+function nowTime(){return new Date().toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'});}
+function dateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const evColors={meeting:'var(--ac)',task:'var(--cy)',followup:'var(--am)'};
+const evClass={meeting:'',task:'ev-t',followup:'ev-f'};
+
+// CALENDAR NAV
+function navCal(d){
+  if(S.view==='month'){S.mo+=d;if(S.mo>11){S.mo=0;S.yr++;}if(S.mo<0){S.mo=11;S.yr--;}}
+  else if(S.view==='week'){S.weekOffset+=d;}
+  else if(S.view==='agenda'){S.mo+=d;if(S.mo>11){S.mo=0;S.yr++;}if(S.mo<0){S.mo=11;S.yr--;}}
+  renderCurrentView();
+}
+function goToday(){S.mo=new Date().getMonth();S.yr=new Date().getFullYear();S.weekOffset=0;renderCurrentView();}
+function setView(v){
+  S.view=v;
+  ['month','week','agenda'].forEach(x=>{
+    document.getElementById(x+'View').classList.toggle('hidden',x!==v);
+    document.getElementById('tab-'+x).classList.toggle('active',x===v);
+  });
+  renderCurrentView();
+}
+function renderCurrentView(){
+  if(S.view==='month')renderMonth();
+  else if(S.view==='week')renderWeek();
+  else renderAgenda();
+}
+
+// MONTH VIEW
+function renderMonth(){
+  document.getElementById('calLabel').textContent=MONTHS[S.mo]+' '+S.yr;
+  const grid=document.getElementById('calGrid');grid.innerHTML='';
+  const first=new Date(S.yr,S.mo,1);
+  let dow=first.getDay();dow=dow===0?6:dow-1;
+  const dim=new Date(S.yr,S.mo+1,0).getDate();
+  const dimp=new Date(S.yr,S.mo,0).getDate();
+  const td=new Date();
+  const cells=Math.ceil((dow+dim)/7)*7;
+  for(let i=0;i<cells;i++){
+    let day,mo,yr,other=false;
+    if(i<dow){day=dimp-dow+i+1;mo=S.mo-1;yr=S.yr;other=true;}
+    else if(i>=dow+dim){day=i-dow-dim+1;mo=S.mo+1;yr=S.yr;other=true;}
+    else{day=i-dow+1;mo=S.mo;yr=S.yr;}
+    if(mo<0){mo=11;yr--;}if(mo>11){mo=0;yr++;}
+    const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const evs=S.events.filter(e=>e.date===ds);
+    const isToday=day===td.getDate()&&mo===td.getMonth()&&yr===td.getFullYear();
+    const c=document.createElement('div');
+    c.className='cal-day'+(other?' om':'')+(isToday?' today':'');
+    const pillsHtml=evs.slice(0,2).map(e=>`<div class="dpill dp-${e.type[0]}">${e.title}</div>`).join('');
+    const moreHtml=evs.length>2?`<div class="more-pill">+${evs.length-2} mai multe</div>`:'';
+    c.innerHTML=`<div class="dnum">${day}</div><div class="devs">${pillsHtml}${moreHtml}</div>`;
+    c.onclick=()=>openModal(ds);
+    grid.appendChild(c);
+  }
+}
+
+// WEEK VIEW
+function renderWeek(){
+  const now=new Date();
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-((now.getDay()+6)%7)+S.weekOffset*7);
+  const days=[];for(let i=0;i<7;i++){const d=new Date(monday);d.setDate(monday.getDate()+i);days.push(d);}
+  const first=days[0],last=days[6];
+  document.getElementById('calLabel').textContent=`${first.getDate()} ${MONTHS[first.getMonth()].slice(0,3)} — ${last.getDate()} ${MONTHS[last.getMonth()].slice(0,3)} ${last.getFullYear()}`;
+  // Header
+  const wh=document.getElementById('weekHeader');
+  wh.innerHTML='<div style="border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--t4);padding-bottom:4px">ORA</div>';
+  days.forEach(d=>{
+    const isToday=dateStr(d)===today();
+    const div=document.createElement('div');
+    div.className='week-day-head';
+    div.innerHTML=`<div class="wdh-name">${DAYS[d.getDay()===0?6:d.getDay()-1]}</div><div class="wdh-num${isToday?' today-num':''}">${d.getDate()}</div>`;
+    wh.appendChild(div);
+  });
+  // Body
+  const wb=document.getElementById('weekBody');wb.innerHTML='';
+  // Time col
+  const tc=document.createElement('div');tc.className='time-col';
+  for(let h=0;h<24;h++){const s=document.createElement('div');s.className='time-slot';s.innerHTML=`<div class="time-label">${String(h).padStart(2,'0')}:00</div>`;tc.appendChild(s);}
+  wb.appendChild(tc);
+  // Day cols
+  days.forEach(d=>{
+    const ds=dateStr(d);
+    const dc=document.createElement('div');dc.className='day-col';
+    const dayEvs=S.events.filter(e=>e.date===ds);
+    // slots
+    for(let h=0;h<24;h++){
+      const slot=document.createElement('div');slot.className='day-slot';
+      slot.onclick=()=>{const t=`${String(h).padStart(2,'0')}:00`;openModal(ds,t);};
+      dc.appendChild(slot);
+    }
+    // place timed events
+    dayEvs.forEach(ev=>{
+      if(ev.time){
+        const[hh,mm]=ev.time.split(':').map(Number);
+        const top=hh*56+mm*(56/60);
+        const el=document.createElement('div');
+        el.className=`week-ev ${evClass[ev.type]}`;
+        el.style.top=top+'px';el.style.height='50px';
+        el.textContent=(ev.time?ev.time+' ':'')+ev.title;
+        el.onclick=e=>{e.stopPropagation();delEvent(ev.id);};
+        dc.appendChild(el);
+      } else {
+        // no-time events at top
+        const el=document.createElement('div');
+        el.className=`week-ev ${evClass[ev.type]} week-ev-notime`;
+        el.style.top='2px';el.style.height='22px';el.style.fontSize='9px';
+        el.textContent=ev.title;
+        dc.appendChild(el);
+      }
+    });
+    wb.appendChild(dc);
+  });
+}
+
+// AGENDA VIEW
+function renderAgenda(){
+  document.getElementById('calLabel').textContent=MONTHS[S.mo]+' '+S.yr;
+  const ag=document.getElementById('agendaView');ag.innerHTML='';
+  const dim=new Date(S.yr,S.mo+1,0).getDate();
+  let hasAny=false;
+  for(let d=1;d<=dim;d++){
+    const ds=`${S.yr}-${String(S.mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs=S.events.filter(e=>e.date===ds).sort((a,b)=>a.time>b.time?1:-1);
+    if(!evs.length)continue;
+    hasAny=true;
+    const dayDate=new Date(S.yr,S.mo,d);
+    const dayName=DAYS[dayDate.getDay()===0?6:dayDate.getDay()-1];
+    const isToday=ds===today();
+    const div=document.createElement('div');div.className='agenda-day';
+    div.innerHTML=`<div class="agenda-day-head"><div class="agenda-day-name">${dayName}</div><div class="agenda-day-date">${fmtDate(ds)}</div>${isToday?'<div class="agenda-day-badge">Azi</div>':''}</div>`+
+      evs.map(e=>`<div class="agenda-ev"><div class="ag-bar" style="background:${evColors[e.type]}"></div><div class="ag-info"><div class="ag-name">${e.title}</div><div class="ag-meta">${e.time||'Toată ziua'}${e.notes?' — '+e.notes:''}</div></div><button class="ag-del" onclick="delEvent('${e.id}')">×</button></div>`).join('');
+    ag.appendChild(div);
+  }
+  if(!hasAny){ag.innerHTML='<div class="empty">Niciun eveniment în '+MONTHS[S.mo]+'</div>';}
+}
+
+// EVENTS
+function openModal(date=null,time=null){
+  document.getElementById('eTitle').value='';
+  document.getElementById('eType').value='meeting';
+  document.getElementById('eDate').value=date||today();
+  document.getElementById('eTime').value=time||'';
+  document.getElementById('eNotes').value='';
+  document.getElementById('ov').classList.add('open');
+}
+function closeModal(){document.getElementById('ov').classList.remove('open');}
+function saveEvent(){
+  const title=document.getElementById('eTitle').value.trim();
+  const date=document.getElementById('eDate').value;
+  if(!title||!date){alert('Completează titlul și data!');return;}
+  const ev={id:Date.now().toString(),title,type:document.getElementById('eType').value,date,time:document.getElementById('eTime').value,notes:document.getElementById('eNotes').value.trim()};
+  S.events.push(ev);schedNotif(ev);save();renderCurrentView();updateStats();closeModal();
+}
+function delEvent(id){S.events=S.events.filter(e=>e.id!==id);save();renderCurrentView();updateStats();}
+
+// TASKS
+function addTask(){
+  const inp=document.getElementById('tIn');const t=inp.value.trim();if(!t)return;
+  S.tasks.unshift({id:Date.now().toString(),title:t,priority:document.getElementById('tPri').value,done:false});
+  inp.value='';save();renderTasks();updateStats();
+}
+function addTask2(){
+  const inp=document.getElementById('tIn2');const t=inp.value.trim();if(!t)return;
+  S.tasks.unshift({id:Date.now().toString(),title:t,priority:document.getElementById('tPri2').value,done:false});
+  inp.value='';save();renderTasks();renderTasksPage();updateStats();
+}
+function toggleTask(id){S.tasks=S.tasks.map(t=>t.id===id?{...t,done:!t.done}:t);save();renderTasks();renderTasksPage();updateStats();}
+function delTask(id){S.tasks=S.tasks.filter(t=>t.id!==id);save();renderTasks();renderTasksPage();updateStats();}
+function taskHTML(t,big=false){
+  return`<div class="t-item${t.done?' done':''}"${big?'style="padding:10px 12px"':''} onclick="toggleTask('${t.id}')"><div class="t-cb">${t.done?'✓':''}</div><div class="pdot p-${t.priority[0]}"></div><div class="t-txt"${big?'style="font-size:13px"':''}>${t.title}</div><button class="t-del" onclick="event.stopPropagation();delTask('${t.id}')">×</button></div>`;
+}
+function renderTasks(){
+  const sorted=[...S.tasks].sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return{high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority];});
+  const list=document.getElementById('tList');
+  list.innerHTML=sorted.length?sorted.map(t=>taskHTML(t)).join(''):'<div class="empty">Niciun task</div>';
+}
+function renderTasksPage(){
+  const sorted=[...S.tasks].sort((a,b)=>{if(a.done!==b.done)return a.done?1:-1;return{high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority];});
+  const list=document.getElementById('tList2');
+  list.innerHTML=sorted.length?sorted.map(t=>taskHTML(t,true)).join(''):'<div class="empty">Niciun task adăugat</div>';
+}
+
+// CHAT
+let mc=0;
+function appendMsg(containerId,role,html){
+  const id='m'+(++mc);
+  document.getElementById(containerId).innerHTML+=`<div class="msg ${role}" id="${id}"><div class="msg-av">${role==='user'?'D':'AI'}</div><div><div class="msg-bub">${html}</div><div class="msg-t">${nowTime()}</div></div></div>`;
+  document.getElementById(containerId).scrollTop=99999;return id;
+}
+function updMsg(id,html){const el=document.getElementById(id);if(el)el.querySelector('.msg-bub').innerHTML=html;['chatMsgs','chatMsgs2'].forEach(c=>document.getElementById(c).scrollTop=99999);}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function handleKey2(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg2();}}
+
+const SYS=()=>`Ești asistentul personal al lui David Mânteanu, 16 ani, fondator Atlas Scales (CRM și automatizări B2B). Lucrează cu Luca (tehnic) și Ștefan (cold calling). Răspunde mereu în română, concis și prietenos.
+EVENTS: ${JSON.stringify(S.events.slice(-15))}
+TASKS: ${JSON.stringify(S.tasks.slice(-15))}
+AZI: ${today()}
+Când userul vrea să modifice date, include JSON pe linie separată:
+{"action":"add_event","data":{"title":"...","type":"meeting|task|followup","date":"YYYY-MM-DD","time":"HH:MM","notes":"..."}}
+{"action":"add_task","data":{"title":"...","priority":"high|medium|low"}}
+{"action":"delete_event","data":{"id":"..."}}
+{"action":"delete_task","data":{"id":"..."}}`;
+
+async function callClaude(msg,containerId,btnId){
+  if(!S.apiKey){toast('Introdu API key-ul mai întâi!');return;}
+  appendMsg(containerId,'user',msg);
+  const btn=document.getElementById(btnId);btn.disabled=true;
+  const tid=appendMsg(containerId,'ai','<span class="ld">Gândesc</span>');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-iab':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,system:SYS(),messages:[{role:'user',content:msg}]})});
+    const d=await r.json();
+    if(d.error)updMsg(tid,'Eroare: '+d.error.message);
+    else processReply(d.content[0].text,tid);
+  }catch(e){updMsg(tid,'Eroare conexiune.');}
+  btn.disabled=false;
+}
+function sendMsg(){const inp=document.getElementById('chatIn');const m=inp.value.trim();if(!m)return;inp.value='';callClaude(m,'chatMsgs','sendBtn');}
+function sendMsg2(){const inp=document.getElementById('ci2');const m=inp.value.trim();if(!m)return;inp.value='';callClaude(m,'chatMsgs2','sb2');}
+function processReply(text,msgId){
+  const m=text.match(/\{[^{}]*"action"[^{}]*\}/);let display=text;
+  if(m){try{
+    const a=JSON.parse(m[0]);display=text.replace(m[0],'').trim();
+    if(a.action==='add_event'&&a.data){const ev={id:Date.now().toString(),...a.data};S.events.push(ev);schedNotif(ev);save();renderCurrentView();updateStats();}
+    else if(a.action==='add_task'&&a.data){S.tasks.unshift({id:Date.now().toString(),title:a.data.title||'Task',priority:a.data.priority||'medium',done:false});save();renderTasks();updateStats();}
+    else if(a.action==='delete_event'&&a.data?.id){S.events=S.events.filter(e=>e.id!==a.data.id);save();renderCurrentView();updateStats();}
+    else if(a.action==='delete_task'&&a.data?.id){S.tasks=S.tasks.filter(t=>t.id!==a.data.id);save();renderTasks();updateStats();}
+  }catch(e){}}
+  updMsg(msgId,display||'Gata!');
+}
+
+function toast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ac);color:#fff;padding:9px 18px;border-radius:8px;font-family:Geist,sans-serif;font-weight:600;font-size:12px;z-index:9999';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target===document.getElementById('ov'))closeModal();});
+
+load();initHeader();renderCurrentView();renderTasks();updateStats();initNotif();
+</script>
+</body>
+</html>
